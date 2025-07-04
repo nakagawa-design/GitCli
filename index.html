@@ -3,216 +3,276 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ひき肉の美味しい使い方ガイド</title>
-    <!-- Tailwind CSS CDN -->
+    <title>対話型焼肉ガイド：究極の順番</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts - Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Chosen Palette: Yakiniku Ember (Warm neutrals bg-stone-100, text-stone-800, with a red-600 accent) -->
+    <!-- Application Structure Plan: A single-page, vertical timeline structure was chosen to mirror the chronological progression of a Yakiniku meal. This is more intuitive for a step-by-step guide than a dashboard. Users click on a stage in the timeline to dynamically update a details pane and a radar chart visualizing the flavor profile. This "details on demand" approach keeps the interface clean and focuses the user on one step at a time, enhancing comprehension of the report's sequential advice. -->
+    <!-- Visualization & Content Choices: Report Info: Staged eating order -> Goal: Guide user through the process -> Viz/Presentation: Interactive HTML/CSS timeline + dynamic text block + Chart.js Radar Chart. Interaction: Clicking a timeline stage updates text and chart. Justification: The timeline visually represents the report's core flow. The radar chart translates the qualitative descriptions (fatty, rich) into a simple, comparable visual format, adding an analytical layer. The dynamic text provides context. Library/Method: Vanilla JS for state/DOM updates, Chart.js for visualization. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap');
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f8f8f8;
-            color: #333;
+            font-family: 'Noto Sans JP', sans-serif;
+            background-color: #f5f5f4; /* stone-100 */
+            color: #292524; /* stone-800 */
         }
-        .container {
-            max-width: 1000px;
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: 1.25rem;
+            top: 2.5rem;
+            bottom: -2.5rem;
+            width: 2px;
+            background-color: #d6d3d1; /* stone-300 */
+            transform: translateX(-50%);
         }
-        .section-title {
-            border-bottom: 2px solid #e2e8f0;
-            padding-bottom: 0.5rem;
-            margin-bottom: 1.5rem;
+        .timeline-item:last-child::before {
+            display: none;
         }
-        .card {
-            background-color: #ffffff;
-            border-radius: 0.75rem; /* rounded-xl */
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
+        .timeline-dot {
+            transition: all 0.3s ease;
         }
-        .cuisine-title {
-            font-weight: 600;
-            color: #4a5568;
-            margin-bottom: 0.75rem;
+        .timeline-item.active .timeline-dot {
+            background-color: #dc2626; /* red-600 */
+            transform: scale(1.2);
         }
-        ul {
-            list-style-type: disc;
-            margin-left: 1.25rem;
+         .timeline-item.active .timeline-text {
+            color: #dc2626; /* red-600 */
+            font-weight: 700;
         }
-        li {
-            margin-bottom: 0.25rem;
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 350px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
         }
     </style>
 </head>
-<body class="p-4">
-    <div class="container mx-auto bg-white rounded-xl shadow-lg p-6 md:p-8 lg:p-10 my-8">
-        <!-- Header Section -->
-        <header class="text-center mb-8 md:mb-12">
-            <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-2">ひき肉の美味しい使い方ガイド</h1>
-            <p class="text-lg text-gray-600">万能食材「ひき肉」を使いこなして、毎日の食卓をもっと豊かに！</p>
+<body class="antialiased">
+    <div class="container mx-auto px-4 py-8 md:py-12">
+        
+        <header class="text-center mb-10 md:mb-16">
+            <h1 class="text-3xl md:text-5xl font-bold text-stone-900">対話型焼肉ガイド</h1>
+            <p class="mt-2 text-lg text-stone-600">究極の順番を極める</p>
         </header>
 
-        <!-- Introduction -->
-        <section class="mb-8">
-            <p class="text-gray-700 leading-relaxed">
-                ひき肉は、牛肉、豚肉、鶏肉、またはそれらの合いびき肉など、様々な種類があり、どんな料理にも合わせやすい万能食材です。
-                和洋中問わず、たくさんの美味しい料理が作れます。それぞれのひき肉の特徴と、おすすめの料理をご紹介します。
+        <section class="max-w-4xl mx-auto mb-12 text-center">
+            <h2 class="text-2xl font-bold mb-4">焼肉の体験を、次のレベルへ。</h2>
+            <p class="text-stone-700 leading-relaxed">
+                焼肉は、ただ肉を焼いて食べるだけではありません。食べる「順番」を意識することで、それぞれの肉が持つ個性を最大限に引き出し、味覚の旅をより深く楽しむことができます。このガイドでは、専門家が推奨する焼肉のコースをステップごとに探求します。下のタイムラインをクリックして、各ステージの秘密を発見してください。
             </p>
         </section>
 
-        <!-- Ground Meat Types Section -->
-        <section class="mb-8 md:mb-12">
-            <h2 class="text-2xl md:text-3xl font-semibold text-gray-800 section-title">ひき肉の種類と特徴</h2>
+        <main class="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12">
+            
+            <aside class="md:col-span-4 lg:col-span-3">
+                <h3 class="text-xl font-bold mb-4 text-center md:text-left">焼肉コース</h3>
+                <div id="timeline-nav" class="relative">
+                    <!-- Timeline items will be injected here by JavaScript -->
+                </div>
+            </aside>
 
-            <!-- Chicken Ground Meat -->
-            <div class="card">
-                <h3 class="text-xl md:text-2xl font-bold text-green-700 mb-3">1. 鶏ひき肉 (Chicken Ground Meat)</h3>
-                <p class="text-gray-700 mb-2"><strong class="text-gray-800">特徴:</strong> 淡白でさっぱり、ヘルシー。クセが少なく、ふんわりとした食感。</p>
-                <p class="text-gray-700 mb-4"><strong class="text-gray-800">価格帯の目安:</strong> 比較的安価。むね肉ひき肉は特に手頃で、もも肉ひき肉はやや高め。</p>
-
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                        <h4 class="cuisine-title text-blue-700">🍚 和食 (Japanese Cuisine)</h4>
-                        <ul>
-                            <li>つくね</li>
-                            <li>鶏そぼろ</li>
-                            <li>和風ハンバーグ</li>
-                            <li>鶏だんご (鍋物、汁物)</li>
-                            <li>あんかけ料理 (大根、蕪など)</li>
-                        </ul>
+            <article class="md:col-span-8 lg:col-span-9 bg-white p-6 md:p-8 rounded-2xl shadow-lg">
+                <div class="flex flex-col lg:flex-row gap-8">
+                    <div class="lg:w-1/2">
+                        <h2 id="details-title" class="text-2xl md:text-3xl font-bold text-stone-900 mb-4"></h2>
+                        <p id="details-reason-title" class="font-bold text-stone-700 mb-2"></p>
+                        <p id="details-reason" class="text-stone-600 leading-relaxed mb-4"></p>
+                        <p id="details-tip-title" class="font-bold text-stone-700 mb-2"></p>
+                        <p id="details-tip" class="text-stone-600 leading-relaxed"></p>
                     </div>
-                    <div>
-                        <h4 class="cuisine-title text-red-700">🍝 洋食 (Western Cuisine)</h4>
-                        <ul>
-                            <li>鶏ひき肉のミートボール</li>
-                            <li>鶏ひき肉のドライカレー</li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h4 class="cuisine-title text-yellow-700">🍜 中華 (Chinese Cuisine)</h4>
-                        <ul>
-                            <li>鶏ひき肉の麻婆豆腐/麻婆茄子</li>
-                            <li>鶏ひき肉の春雨炒め</li>
-                        </ul>
+                    <div class="lg:w-1/2 flex items-center justify-center">
+                        <div class="chart-container">
+                            <canvas id="flavorChart"></canvas>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </article>
 
-            <!-- Pork Ground Meat -->
-            <div class="card">
-                <h3 class="text-xl md:text-2xl font-bold text-pink-700 mb-3">2. 豚ひき肉 (Pork Ground Meat)</h3>
-                <p class="text-gray-700 mb-2"><strong class="text-gray-800">特徴:</strong> コクがあり、ジューシー。脂の旨みが強く、柔らかい食感。</p>
-                <p class="text-gray-700 mb-4"><strong class="text-gray-800">価格帯の目安:</strong> 鶏ひき肉と同等かやや高め。赤身と脂身のバランスによって価格が変動することがあります。</p>
-
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                        <h4 class="cuisine-title text-blue-700">🍚 和食 (Japanese Cuisine)</h4>
-                        <ul>
-                            <li>肉味噌</li>
-                            <li>ピーマンの肉詰め</li>
-                            <li>大根のそぼろ煮</li>
-                            <li>和風ハンバーグ (合いびき肉に近い風味)</li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h4 class="cuisine-title text-red-700">🍝 洋食 (Western Cuisine)</h4>
-                        <ul>
-                            <li>メンチカツ</li>
-                            <li>ミートソース (豚ひき肉ベース)</li>
-                            <li>ロールキャベツ</li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h4 class="cuisine-title text-yellow-700">🍜 中華 (Chinese Cuisine)</h4>
-                        <ul>
-                            <li>麻婆豆腐/麻婆茄子</li>
-                            <li>餃子/焼売</li>
-                            <li>担々麺</li>
-                            <li>回鍋肉 (ホイコーロー)</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Mixed Ground Meat -->
-            <div class="card">
-                <h3 class="text-xl md:text-2xl font-bold text-purple-700 mb-3">3. 合いびき肉 (Mixed Ground Meat - Beef & Pork)</h3>
-                <p class="text-gray-700 mb-2"><strong class="text-gray-800">特徴:</strong> 牛肉の旨味と豚肉のコク・柔らかさ、両方の良いところを兼ね備えた万能選手。</p>
-                <p class="text-gray-700 mb-4"><strong class="text-gray-800">価格帯の目安:</strong> 豚ひき肉と同等か、牛肉の割合が多い場合はやや高めになることがあります。</p>
-
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                        <h4 class="cuisine-title text-blue-700">🍚 和食 (Japanese Cuisine)</h4>
-                        <ul>
-                            <li>ハンバーグ (和風ソースでも美味)</li>
-                            <li>コロッケ</li>
-                            <li>肉豆腐</li>
-                            <li>和風ドライカレー/キーマカレー</li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h4 class="cuisine-title text-red-700">🍝 洋食 (Western Cuisine)</h4>
-                        <ul>
-                            <li>ハンバーグ (デミグラス、トマトソース)</li>
-                            <li>ミートソースパスタ/ラザニア</li>
-                            <li>ミートローフ</li>
-                            <li>タコライス</li>
-                        </ul>
-                    </div>
-                    <div>
-                        <h4 class="cuisine-title text-yellow-700">🍜 中華 (Chinese Cuisine)</h4>
-                        <ul>
-                            <li>麻婆豆腐/麻婆茄子 (複雑な旨み)</li>
-                            <li>餃子/焼売 (ジューシーでコクのある餡)</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- How to Choose Ground Meat Section -->
-        <section class="mb-8 md:mb-12">
-            <h2 class="text-2xl md:text-3xl font-semibold text-gray-800 section-title">和食で使うひき肉の選び方</h2>
-            <div class="card">
-                <p class="text-gray-700 mb-4">和食でひき肉を使う際は、料理のイメージに合わせて選びましょう。</p>
-                <ul class="list-none pl-0">
-                    <li class="mb-2">
-                        <strong class="text-green-700">あっさり、ヘルシー、優しい味付けにしたいなら</strong> → 鶏ひき肉
-                    </li>
-                    <li class="mb-2">
-                        <strong class="text-pink-700">コクとジューシーさを出したい、ご飯が進む味にしたいなら</strong> → 豚ひき肉
-                    </li>
-                    <li class="mb-2">
-                        <strong class="text-purple-700">どちらの要素もバランス良く欲しい、汎用的に使いたいなら</strong> → 合いびき肉
-                    </li>
-                </ul>
-                <p class="text-gray-700 mt-4">
-                    迷った際は、まずは鶏ひき肉や合いびき肉から試してみると、和食の風味に馴染みやすいでしょう。
-                </p>
-            </div>
-        </section>
-
-        <!-- Grinding Differences Section -->
-        <section class="mb-8 md:mb-12">
-            <h2 class="text-2xl md:text-3xl font-semibold text-gray-800 section-title">ひき肉のひき方による違い</h2>
-            <div class="card">
-                <ul class="list-none pl-0">
-                    <li class="mb-2">
-                        <strong class="text-gray-800">粗びき:</strong> 肉々しい食感と旨味をしっかり感じたい料理に。
-                    </li>
-                    <li class="mb-2">
-                        <strong class="text-gray-800">細びき:</strong> 最も一般的で、様々な料理に使いやすい。
-                    </li>
-                    <li class="mb-2">
-                        <strong class="text-gray-800">二度びき:</strong> より細かく、滑らかな食感にしたい場合に。
-                    </li>
-                </ul>
-            </div>
-        </section>
-
-        <!-- Footer -->
-        <footer class="text-center text-gray-500 text-sm mt-8 pt-4 border-t border-gray-200">
-            &copy; 2025 ひき肉の美味しい使い方ガイド. All rights reserved.
+        </main>
+        
+        <footer class="text-center mt-12 md:mt-16 pt-8 border-t border-stone-200">
+             <h2 class="text-xl font-bold mb-4">結論：自分だけの最高の順番を</h2>
+            <p class="text-stone-700 max-w-3xl mx-auto leading-relaxed">
+                このガイドで紹介したのは、「あっさり→こってり」という王道の流れです。しかし、焼肉の最大の魅力はその自由さにあります。この基本を参考にしつつ、ぜひあなたの好みやその日の気分に合わせて、自分だけの最高のコースを組み立ててみてください。
+            </p>
         </footer>
+
     </div>
+
+    <script>
+        const yakinikuData = [
+            {
+                id: 0,
+                title: "ステップ1：タン塩",
+                reasonTitle: "なぜタンから？",
+                reason: "脂が少なくさっぱりした味わいで、味覚をリセットし食欲を刺激します。また、網が汚れにくいため、その後の肉を美味しく焼くための準備としても最適です。",
+                tipTitle: "味わいのヒント",
+                tip: "レモンを軽く絞って。肉本来の繊細な旨味と食感をシンプルに楽しむのがおすすめです。",
+                chartData: { labels: ['さっぱり度', '脂の量', '肉の旨味', '食感の良さ', '濃厚さ'], values: [9, 2, 6, 8, 1] }
+            },
+            {
+                id: 1,
+                title: "ステップ2：赤身肉・ハラミ",
+                reasonTitle: "なぜ次に赤身？",
+                reason: "本格的な肉の旨味を味わいつつも、脂は控えめ。タレの味が乗り始め、食事の中盤への期待感を高めます。胃にも優しく、まだまだ食べられます。",
+                tipTitle: "味わいのヒント",
+                tip: "ロースやモモなどの赤身は、甘めのタレと相性抜群。ハラミの濃厚な味わいも楽しんでください。白米が欲しくなるタイミングです。",
+                chartData: { labels: ['さっぱり度', '脂の量', '肉の旨味', '食感の良さ', '濃厚さ'], values: [6, 4, 8, 7, 5] }
+            },
+            {
+                id: 2,
+                title: "ステップ3：カルビ・特選ロース",
+                reasonTitle: "なぜ中盤に脂の乗った肉？",
+                reason: "焼肉のクライマックス。味覚が慣れてきたこのタイミングで、脂の甘みと濃厚な旨味が最も美味しく感じられます。満足感が一気に高まります。",
+                tipTitle: "味わいのヒント",
+                tip: "脂が多いため焼きすぎは禁物。さっと炙るように焼き、とろけるような食感を楽しみましょう。網の交換を頼む良いタイミングです。",
+                chartData: { labels: ['さっぱり度', '脂の量', '肉の旨味', '食感の良さ', '濃厚さ'], values: [2, 9, 9, 6, 9] }
+            },
+            {
+                id: 3,
+                title: "ステップ4：ホルモン・箸休め",
+                reasonTitle: "なぜここでホルモン？",
+                reason: "濃厚なカルビの後、ホルモンの独特な食感と風味が味覚をリフレッシュさせます。野菜やキムチも挟むことで、口の中がさっぱりし、食事がリセットされます。",
+                tipTitle: "味わいのヒント",
+                tip: "ミノやレバーなど、種類によって異なる食感と味の探求を。サンチュで肉を巻いたり、キムチで口直しをするのがおすすめです。",
+                chartData: { labels: ['さっぱり度', '脂の量', '肉の旨味', '食感の良さ', '濃厚さ'], values: [5, 6, 7, 9, 7] }
+            },
+            {
+                id: 4,
+                title: "ステップ5：締めの一品",
+                reasonTitle: "なぜ最後に締め？",
+                reason: "食事の満足感を完璧にするためのフィナーレです。温かいスープやさっぱりした麺類が、それまでの脂を落ち着かせ、心地よい満腹感をもたらします。",
+                tipTitle: "味わいのヒント",
+                tip: "さっぱりしたいなら冷麺、満足感をプラスするならクッパやビビンバが最適。温かいスープで胃をいたわるのも良いでしょう。",
+                chartData: { labels: ['さっぱり度', '脂の量', '肉の旨味', '食感の良さ', '濃厚さ'], values: [8, 2, 4, 5, 3] }
+            }
+        ];
+
+        let activeStep = 0;
+        let flavorChart;
+
+        const timelineNav = document.getElementById('timeline-nav');
+        const detailsTitle = document.getElementById('details-title');
+        const detailsReasonTitle = document.getElementById('details-reason-title');
+        const detailsReason = document.getElementById('details-reason');
+        const detailsTipTitle = document.getElementById('details-tip-title');
+        const detailsTip = document.getElementById('details-tip');
+
+        function createTimeline() {
+            yakinikuData.forEach(step => {
+                const item = document.createElement('div');
+                item.className = 'timeline-item relative pl-10 pb-10 cursor-pointer';
+                item.dataset.id = step.id;
+                
+                const dot = document.createElement('div');
+                dot.className = 'timeline-dot absolute left-5 w-5 h-5 bg-stone-300 rounded-full top-1';
+                dot.style.transform = 'translateX(-50%)';
+
+                const text = document.createElement('p');
+                text.className = 'timeline-text text-lg text-stone-700 transition-colors duration-300';
+                text.textContent = step.title;
+
+                item.appendChild(dot);
+                item.appendChild(text);
+                timelineNav.appendChild(item);
+
+                item.addEventListener('click', () => {
+                    updateView(step.id);
+                });
+            });
+        }
+        
+        function updateView(id) {
+            activeStep = id;
+            const data = yakinikuData[id];
+
+            document.querySelectorAll('.timeline-item').forEach(item => {
+                item.classList.toggle('active', parseInt(item.dataset.id) === id);
+            });
+
+            detailsTitle.textContent = data.title;
+            detailsReasonTitle.textContent = data.reasonTitle;
+            detailsReason.textContent = data.reason;
+            detailsTipTitle.textContent = data.tipTitle;
+            detailsTip.textContent = data.tip;
+
+            updateChart(data.chartData);
+        }
+
+        function createChart() {
+            const ctx = document.getElementById('flavorChart').getContext('2d');
+            flavorChart = new Chart(ctx, {
+                type: 'radar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'フレーバープロファイル',
+                        data: [],
+                        fill: true,
+                        backgroundColor: 'rgba(220, 38, 38, 0.2)',
+                        borderColor: 'rgb(220, 38, 38)',
+                        pointBackgroundColor: 'rgb(220, 38, 38)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgb(220, 38, 38)'
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: {
+                                color: '#d6d3d1'
+                            },
+                            grid: {
+                                color: '#e7e5e4'
+                            },
+                            pointLabels: {
+                                font: {
+                                    size: 14,
+                                    family: "'Noto Sans JP', sans-serif"
+                                },
+                                color: '#44403c'
+                            },
+                            ticks: {
+                                beginAtZero: true,
+                                max: 10,
+                                stepSize: 2,
+                                backdropColor: 'rgba(255, 255, 255, 0.75)',
+                                color: '#78716c'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+        
+        function updateChart(chartData) {
+            flavorChart.data.labels = chartData.labels;
+            flavorChart.data.datasets[0].data = chartData.values;
+            flavorChart.update();
+        }
+
+        window.onload = () => {
+            createTimeline();
+            createChart();
+            updateView(0);
+        };
+    </script>
 </body>
 </html>
