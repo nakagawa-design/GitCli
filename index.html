@@ -3,276 +3,557 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>対話型焼肉ガイド：究極の順番</title>
+    <title>Beef Primal Sales Strategy Infographic</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Chosen Palette: Yakiniku Ember (Warm neutrals bg-stone-100, text-stone-800, with a red-600 accent) -->
-    <!-- Application Structure Plan: A single-page, vertical timeline structure was chosen to mirror the chronological progression of a Yakiniku meal. This is more intuitive for a step-by-step guide than a dashboard. Users click on a stage in the timeline to dynamically update a details pane and a radar chart visualizing the flavor profile. This "details on demand" approach keeps the interface clean and focuses the user on one step at a time, enhancing comprehension of the report's sequential advice. -->
-    <!-- Visualization & Content Choices: Report Info: Staged eating order -> Goal: Guide user through the process -> Viz/Presentation: Interactive HTML/CSS timeline + dynamic text block + Chart.js Radar Chart. Interaction: Clicking a timeline stage updates text and chart. Justification: The timeline visually represents the report's core flow. The radar chart translates the qualitative descriptions (fatty, rich) into a simple, comparable visual format, adding an analytical layer. The dynamic text provides context. Library/Method: Vanilla JS for state/DOM updates, Chart.js for visualization. -->
-    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <!-- Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700;900&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Marked.js for Markdown parsing -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <!-- Palette: Vibrant & Professional (Red/Blue/Gold) -->
+    <!-- 
+        Palette Name: "Butcher's Professional"
+        Primary Red: #D32F2F
+        Trust Blue: #1976D2
+        Highlight Gold: #FBC02D
+        Dark Slate: #37474F
+    -->
+
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap');
         body {
-            font-family: 'Noto Sans JP', sans-serif;
-            background-color: #f5f5f4; /* stone-100 */
-            color: #292524; /* stone-800 */
-        }
-        .timeline-item::before {
-            content: '';
-            position: absolute;
-            left: 1.25rem;
-            top: 2.5rem;
-            bottom: -2.5rem;
-            width: 2px;
-            background-color: #d6d3d1; /* stone-300 */
-            transform: translateX(-50%);
-        }
-        .timeline-item:last-child::before {
-            display: none;
-        }
-        .timeline-dot {
-            transition: all 0.3s ease;
-        }
-        .timeline-item.active .timeline-dot {
-            background-color: #dc2626; /* red-600 */
-            transform: scale(1.2);
-        }
-         .timeline-item.active .timeline-text {
-            color: #dc2626; /* red-600 */
-            font-weight: 700;
+            font-family: 'Noto Sans JP', 'Roboto', sans-serif;
+            background-color: #F5F5F5;
+            color: #37474F;
         }
         .chart-container {
             position: relative;
             width: 100%;
-            max-width: 400px;
+            max-width: 600px;
             margin-left: auto;
             margin-right: auto;
-            height: 300px;
-            max-height: 350px;
+            height: 350px;
+            max-height: 400px;
         }
         @media (min-width: 768px) {
             .chart-container {
-                height: 350px;
+                height: 400px;
             }
         }
+        .card-shadow {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: transform 0.2s;
+        }
+        .card-shadow:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        /* Loader styles */
+        .loader {
+            border: 3px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 3px solid #D32F2F;
+            width: 24px;
+            height: 24px;
+            -webkit-animation: spin 1s linear infinite; /* Safari */
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .markdown-body ul { list-style-type: disc; margin-left: 1.5em; margin-bottom: 1em; }
+        .markdown-body h3 { font-weight: bold; margin-top: 1em; margin-bottom: 0.5em; color: #D32F2F; }
+        .markdown-body strong { color: #1976D2; }
     </style>
+    <!-- 
+    CONFIRMATION: 
+    1. NO SVG used.
+    2. NO Mermaid JS used.
+    3. Narrative Plan: Introduction -> Target Analysis (Bar) -> Strategic Value (Radar) -> Sales Mix (Donut) -> Timeline (HTML) -> AI Strategy Tools -> Risks (Cards).
+    -->
 </head>
 <body class="antialiased">
-    <div class="container mx-auto px-4 py-8 md:py-12">
-        
-        <header class="text-center mb-10 md:mb-16">
-            <h1 class="text-3xl md:text-5xl font-bold text-stone-900">対話型焼肉ガイド</h1>
-            <p class="mt-2 text-lg text-stone-600">究極の順番を極める</p>
-        </header>
 
-        <section class="max-w-4xl mx-auto mb-12 text-center">
-            <h2 class="text-2xl font-bold mb-4">焼肉の体験を、次のレベルへ。</h2>
-            <p class="text-stone-700 leading-relaxed">
-                焼肉は、ただ肉を焼いて食べるだけではありません。食べる「順番」を意識することで、それぞれの肉が持つ個性を最大限に引き出し、味覚の旅をより深く楽しむことができます。このガイドでは、専門家が推奨する焼肉のコースをステップごとに探求します。下のタイムラインをクリックして、各ステージの秘密を発見してください。
+    <!-- Hero Section -->
+    <div class="bg-gradient-to-r from-red-700 to-red-900 text-white py-12 px-4 shadow-lg">
+        <div class="max-w-6xl mx-auto text-center">
+            <h1 class="text-4xl md:text-6xl font-black mb-4 tracking-tight">PROJECT: BEEF PRIMAL</h1>
+            <p class="text-xl md:text-2xl font-light opacity-90">牧場直送・部分肉（ブロック）販売 新規事業戦略</p>
+            <div class="mt-8 flex flex-wrap justify-center gap-4">
+                <span class="bg-white text-red-800 px-4 py-2 rounded-full font-bold shadow-md">Launch: Feb 2025</span>
+                <span class="bg-blue-600 text-white px-4 py-2 rounded-full font-bold shadow-md">Target: Outdoor & B2B</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="max-w-6xl mx-auto px-4 py-12 grid grid-cols-1 gap-12">
+
+        <!-- Section 1: Introduction & Vision -->
+        <section class="bg-white rounded-xl card-shadow p-8 border-l-8 border-red-600">
+            <h2 class="text-3xl font-bold text-gray-800 mb-4">Why Primal Cuts? (事業目的)</h2>
+            <p class="text-lg text-gray-600 leading-relaxed mb-6">
+                自社牧場という最大の強みを活かし、既存のスライス肉販売に加え「部分肉（原木・ブロック）」市場へ参入します。
+                これにより、<strong class="text-red-700">客単価の向上</strong>、<strong class="text-red-700">新規顧客層（アウトドア・セミプロ）の開拓</strong>、
+                そして<strong class="text-blue-700">在庫消化の効率化</strong>を実現します。
             </p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+                <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 text-center">
+                    <div class="text-4xl mb-2">🍖</div>
+                    <h3 class="font-bold text-gray-700">High Impact</h3>
+                    <p class="text-sm text-gray-500">骨付き・塊肉による非日常体験の提供</p>
+                </div>
+                <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 text-center">
+                    <div class="text-4xl mb-2">🚜</div>
+                    <h3 class="font-bold text-gray-700">Farm Direct</h3>
+                    <p class="text-sm text-gray-500">牧場直送ストーリーによる信頼性</p>
+                </div>
+                <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 text-center">
+                    <div class="text-4xl mb-2">💰</div>
+                    <h3 class="font-bold text-gray-700">Cost Merit</h3>
+                    <p class="text-sm text-gray-500">加工コスト削減と単価アップの両立</p>
+                </div>
+            </div>
         </section>
 
-        <main class="grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-12">
+        <!-- Section 2: Target Analysis (Bar Chart) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+            <div class="bg-white rounded-xl card-shadow p-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4 border-b pb-2">Target Segment Priority</h2>
+                <p class="text-gray-600 mb-6 text-sm">
+                    市場調査に基づき、4つの主要セグメントを特定しました。
+                    特に「アウトドア層」の映え需要と、「小規模B2B」の仕入れ需要が最も有望（◎）です。
+                    まずはこの2つの層にリソースを集中させます。
+                </p>
+                <div class="chart-container">
+                    <canvas id="targetChart"></canvas>
+                </div>
+                <p class="text-xs text-center text-gray-400 mt-2">Source: Internal Market Analysis</p>
+            </div>
             
-            <aside class="md:col-span-4 lg:col-span-3">
-                <h3 class="text-xl font-bold mb-4 text-center md:text-left">焼肉コース</h3>
-                <div id="timeline-nav" class="relative">
-                    <!-- Timeline items will be injected here by JavaScript -->
+            <div class="space-y-6">
+                <div class="bg-blue-50 rounded-xl p-6 border-l-4 border-blue-600 shadow-sm">
+                    <h3 class="text-xl font-bold text-blue-800 mb-2">Primary Target: Outdoor & BBQ</h3>
+                    <p class="text-gray-700 text-sm">
+                        キャンプ場での「豪快な体験」を求めています。骨付きトマホークや1kg超の赤身塊肉がキラーコンテンツ。
+                        <br><strong>訴求点:</strong> 「ワイルドな非日常」「映え」
+                    </p>
                 </div>
-            </aside>
+                <div class="bg-amber-50 rounded-xl p-6 border-l-4 border-amber-500 shadow-sm">
+                    <h3 class="text-xl font-bold text-amber-800 mb-2">Primary Target: Small B2B</h3>
+                    <p class="text-gray-700 text-sm">
+                        個人飲食店やキッチンカー。大手卸との契約が難しい層への小ロット安定供給。
+                        <br><strong>訴求点:</strong> 「牧場の物語（メニューに記載可）」「小ロット」
+                    </p>
+                </div>
+                <div class="bg-gray-100 rounded-xl p-6 border-l-4 border-gray-400 shadow-sm opacity-80">
+                    <h3 class="text-xl font-bold text-gray-700 mb-2">Secondary Targets</h3>
+                    <ul class="list-disc list-inside text-sm text-gray-600">
+                        <li><strong>料理愛好家:</strong> 希少部位の原木など、技術を楽しむ層。</li>
+                        <li><strong>ホームパーティー:</strong> ローストビーフ用などのコスパ重視層。</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
 
-            <article class="md:col-span-8 lg:col-span-9 bg-white p-6 md:p-8 rounded-2xl shadow-lg">
-                <div class="flex flex-col lg:flex-row gap-8">
-                    <div class="lg:w-1/2">
-                        <h2 id="details-title" class="text-2xl md:text-3xl font-bold text-stone-900 mb-4"></h2>
-                        <p id="details-reason-title" class="font-bold text-stone-700 mb-2"></p>
-                        <p id="details-reason" class="text-stone-600 leading-relaxed mb-4"></p>
-                        <p id="details-tip-title" class="font-bold text-stone-700 mb-2"></p>
-                        <p id="details-tip" class="text-stone-600 leading-relaxed"></p>
-                    </div>
-                    <div class="lg:w-1/2 flex items-center justify-center">
-                        <div class="chart-container">
-                            <canvas id="flavorChart"></canvas>
-                        </div>
+        <!-- Section 3: Strategic Shift (Radar Chart) -->
+        <section class="bg-white rounded-xl card-shadow p-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="md:col-span-1">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4">Business Model Shift</h2>
+                    <p class="text-gray-600 mb-4 text-sm">
+                        従来のスライス肉販売（Existing）と、新規のブロック肉販売（New Project）のビジネス特性を比較します。
+                    </p>
+                    <p class="text-gray-600 mb-4 text-sm">
+                        ブロック肉は「顧客単価」と「話題性（Novelty）」で優れており、加工の手間が減るため「運営コスト」も低減できます。一方で、在庫リスク管理には工夫が必要です。
+                    </p>
+                    <div class="mt-8 p-4 bg-red-50 rounded-lg">
+                        <h4 class="font-bold text-red-800">Key Takeaway</h4>
+                        <p class="text-xs text-red-700 mt-1">
+                            高単価・高話題性の商材を投入することで、ブランド全体の鮮度イメージを向上させます。
+                        </p>
                     </div>
                 </div>
-            </article>
+                <div class="md:col-span-2">
+                    <div class="chart-container">
+                        <canvas id="strategyRadar"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
 
-        </main>
-        
-        <footer class="text-center mt-12 md:mt-16 pt-8 border-t border-stone-200">
-             <h2 class="text-xl font-bold mb-4">結論：自分だけの最高の順番を</h2>
-            <p class="text-stone-700 max-w-3xl mx-auto leading-relaxed">
-                このガイドで紹介したのは、「あっさり→こってり」という王道の流れです。しかし、焼肉の最大の魅力はその自由さにあります。この基本を参考にしつつ、ぜひあなたの好みやその日の気分に合わせて、自分だけの最高のコースを組み立ててみてください。
+        <!-- Section 4: Roadmap (Timeline) -->
+        <section class="bg-white rounded-xl card-shadow p-8">
+            <h2 class="text-3xl font-bold text-gray-800 mb-8 text-center">Launch Roadmap: Road to February</h2>
+            
+            <div class="relative border-l-4 border-gray-200 ml-4 md:ml-8 space-y-12">
+                
+                <!-- Phase 1 -->
+                <div class="relative pl-8 md:pl-12">
+                    <div class="absolute -left-3 top-0 w-6 h-6 bg-gray-400 rounded-full border-4 border-white shadow"></div>
+                    <div class="flex flex-col md:flex-row md:items-center justify-between mb-2">
+                        <span class="text-sm font-bold text-gray-500 uppercase tracking-wider">Phase 1: Until Mid Dec</span>
+                        <span class="text-xs bg-gray-200 text-gray-600 px-2 py-1 rounded">Planning</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-800">Research & Concept</h3>
+                    <p class="text-gray-600 mt-1 text-sm max-w-2xl">
+                        競合価格調査、既存顧客へのニーズアンケート実施。販売部位の選定と原価計算の完了。
+                    </p>
+                </div>
+
+                <!-- Phase 2 -->
+                <div class="relative pl-8 md:pl-12">
+                    <div class="absolute -left-3 top-0 w-6 h-6 bg-blue-500 rounded-full border-4 border-white shadow"></div>
+                    <div class="flex flex-col md:flex-row md:items-center justify-between mb-2">
+                        <span class="text-sm font-bold text-blue-600 uppercase tracking-wider">Phase 2: Late Dec - Mid Jan</span>
+                        <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">Production</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-800">Asset Creation & Legal</h3>
+                    <p class="text-gray-600 mt-1 text-sm max-w-2xl">
+                        シズル感のある商品撮影、LP制作。同梱物（焼き方ガイド）の作成。個体識別番号表示等の法務確認。
+                    </p>
+                </div>
+
+                <!-- Phase 3 -->
+                <div class="relative pl-8 md:pl-12">
+                    <div class="absolute -left-3 top-0 w-6 h-6 bg-amber-500 rounded-full border-4 border-white shadow"></div>
+                    <div class="flex flex-col md:flex-row md:items-center justify-between mb-2">
+                        <span class="text-sm font-bold text-amber-600 uppercase tracking-wider">Phase 3: Mid Jan - Late Jan</span>
+                        <span class="text-xs bg-amber-100 text-amber-800 px-2 py-1 rounded">Pre-Launch</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-800">Teaser & Pre-order</h3>
+                    <p class="text-gray-600 mt-1 text-sm max-w-2xl">
+                        SNSでの予告開始。モニター募集によるレビュー蓄積。在庫リスク低減のための予約販売開始。
+                    </p>
+                </div>
+
+                <!-- Phase 4 -->
+                <div class="relative pl-8 md:pl-12">
+                    <div class="absolute -left-3 top-0 w-6 h-6 bg-red-600 rounded-full border-4 border-white shadow animate-pulse"></div>
+                    <div class="flex flex-col md:flex-row md:items-center justify-between mb-2">
+                        <span class="text-sm font-bold text-red-600 uppercase tracking-wider">Phase 4: February</span>
+                        <span class="text-xs bg-red-100 text-red-800 px-2 py-1 rounded">GO LIVE</span>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-800">Grand Opening</h3>
+                    <p class="text-gray-600 mt-1 text-sm max-w-2xl">
+                        バレンタイン・春キャンプ需要に向けた本販売開始。KPI分析とPDCAサイクル始動。
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- NEW SECTION: Gemini API AI Tools -->
+        <section class="bg-gradient-to-br from-gray-900 to-gray-800 rounded-xl card-shadow p-8 text-white border border-gray-700">
+            <div class="flex items-center gap-3 mb-6">
+                <span class="text-3xl">✨</span>
+                <h2 class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-200 to-purple-200">AI Strategy Simulator (Powered by Gemini)</h2>
+            </div>
+            <p class="text-gray-300 mb-8 text-sm">
+                新規事業におけるマーケティングアイデア出しや、B2B提案時のメニュー開発をAIが支援します。以下でターゲットや条件を変えてシミュレーションしてください。
             </p>
-        </footer>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                
+                <!-- Tool 1: Campaign Generator -->
+                <div class="bg-gray-800 p-6 rounded-lg border border-gray-600">
+                    <h3 class="text-lg font-bold text-blue-300 mb-4 flex items-center gap-2">
+                        <span>📢</span> Campaign Idea Generator
+                    </h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1">Target Segment</label>
+                            <select id="campaignTarget" class="w-full bg-gray-700 border border-gray-600 rounded p-2 text-sm text-white">
+                                <option value="Outdoor/Camper">Outdoor/Camper (Wild)</option>
+                                <option value="Family/Home Party">Family/Home Party (Celebration)</option>
+                                <option value="Meat Geek">Meat Geek (Maniac)</option>
+                                <option value="Valentine Gift Buyer">Valentine Gift Buyer (Female)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1">Season/Theme</label>
+                            <input type="text" id="campaignTheme" value="Winter Camping" class="w-full bg-gray-700 border border-gray-600 rounded p-2 text-sm text-white" placeholder="e.g. Valentine's Day">
+                        </div>
+                        <button onclick="generateCampaign()" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-2 rounded transition flex justify-center items-center gap-2">
+                            <span>✨ Generate Campaign Idea</span>
+                        </button>
+                    </div>
+                    <div id="campaignResult" class="mt-4 p-4 bg-gray-900 rounded border border-gray-700 text-sm min-h-[100px] hidden">
+                        <!-- Result goes here -->
+                    </div>
+                </div>
+
+                <!-- Tool 2: Menu Consultant -->
+                <div class="bg-gray-800 p-6 rounded-lg border border-gray-600">
+                    <h3 class="text-lg font-bold text-amber-300 mb-4 flex items-center gap-2">
+                        <span>🍽️</span> B2B Menu Consultant
+                    </h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1">Beef Primal Cut</label>
+                            <select id="menuCut" class="w-full bg-gray-700 border border-gray-600 rounded p-2 text-sm text-white">
+                                <option value="Tomahawk (Bone-in Ribeye)">Tomahawk (Bone-in Ribeye)</option>
+                                <option value="Rump (Ichibo)">Rump/Ichibo (Lean)</option>
+                                <option value="Chuck Roll (Shoulder)">Chuck Roll (Shoulder)</option>
+                                <option value="Beef Tongue (Block)">Beef Tongue (Block)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-400 mb-1">Restaurant Style</label>
+                            <input type="text" id="menuStyle" value="Casual Bistro" class="w-full bg-gray-700 border border-gray-600 rounded p-2 text-sm text-white" placeholder="e.g. Izakaya">
+                        </div>
+                        <button onclick="generateMenu()" class="w-full bg-amber-600 hover:bg-amber-500 text-white font-bold py-2 rounded transition flex justify-center items-center gap-2">
+                            <span>✨ Suggest Menu Item</span>
+                        </button>
+                    </div>
+                    <div id="menuResult" class="mt-4 p-4 bg-gray-900 rounded border border-gray-700 text-sm min-h-[100px] hidden">
+                        <!-- Result goes here -->
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- Section 5: Risk & Mitigation (Grid) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- Project Distribution Chart -->
+            <div class="bg-white rounded-xl card-shadow p-6">
+                <h3 class="text-lg font-bold text-gray-800 mb-4 text-center">Projected Sales Mix (Volume)</h3>
+                <p class="text-xs text-center text-gray-500 mb-4">初期フェーズにおける販売構成比目標</p>
+                <div class="chart-container" style="height: 300px;">
+                    <canvas id="distributionChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Risk Cards -->
+            <div class="space-y-4">
+                <h3 class="text-lg font-bold text-gray-800 mb-4">Risk Management</h3>
+                
+                <div class="bg-red-50 p-4 rounded-lg border-l-4 border-red-500">
+                    <h4 class="font-bold text-red-800 text-sm">Risk 1: 売れ残り (Inventory)</h4>
+                    <p class="text-xs text-gray-700 mt-1">
+                        <strong>対策:</strong> 「完全予約販売」を基本としてスタート。余剰分は既存のスライス商品へ加工転用、または加工品（ハンバーグ等）への原料化ルートを事前に確保。
+                    </p>
+                </div>
+
+                <div class="bg-red-50 p-4 rounded-lg border-l-4 border-red-500">
+                    <h4 class="font-bold text-red-800 text-sm">Risk 2: クレーム (Claims)</h4>
+                    <p class="text-xs text-gray-700 mt-1">
+                        <strong>対策:</strong> 脂身の割合や形状の個体差について、LP上で図解入りで明確に説明。「許容範囲ガイドライン」を作成し、購入時の同意事項とする。
+                    </p>
+                </div>
+
+                <div class="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-500">
+                    <h4 class="font-bold text-blue-800 text-sm">System: 重量ブレ (Weight Variance)</h4>
+                    <p class="text-xs text-gray-700 mt-1">
+                        <strong>対策:</strong> 「定貫（カット調整）」または「約1kg（900-1100g）」表記での販売とし、システム上の量り売り制限を回避する運用フローを構築。
+                    </p>
+                </div>
+            </div>
+        </div>
 
     </div>
 
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8 mt-12 text-center">
+        <p class="opacity-70 text-sm">Beef Primal Project - Strategic Planning Document</p>
+        <p class="opacity-50 text-xs mt-2">&copy; 2025 Company Name. Internal Use Only.</p>
+    </footer>
+
+    <!-- Chart Logic -->
     <script>
-        const yakinikuData = [
-            {
-                id: 0,
-                title: "ステップ1：タン塩",
-                reasonTitle: "なぜタンから？",
-                reason: "脂が少なくさっぱりした味わいで、味覚をリセットし食欲を刺激します。また、網が汚れにくいため、その後の肉を美味しく焼くための準備としても最適です。",
-                tipTitle: "味わいのヒント",
-                tip: "レモンを軽く絞って。肉本来の繊細な旨味と食感をシンプルに楽しむのがおすすめです。",
-                chartData: { labels: ['さっぱり度', '脂の量', '肉の旨味', '食感の良さ', '濃厚さ'], values: [9, 2, 6, 8, 1] }
-            },
-            {
-                id: 1,
-                title: "ステップ2：赤身肉・ハラミ",
-                reasonTitle: "なぜ次に赤身？",
-                reason: "本格的な肉の旨味を味わいつつも、脂は控えめ。タレの味が乗り始め、食事の中盤への期待感を高めます。胃にも優しく、まだまだ食べられます。",
-                tipTitle: "味わいのヒント",
-                tip: "ロースやモモなどの赤身は、甘めのタレと相性抜群。ハラミの濃厚な味わいも楽しんでください。白米が欲しくなるタイミングです。",
-                chartData: { labels: ['さっぱり度', '脂の量', '肉の旨味', '食感の良さ', '濃厚さ'], values: [6, 4, 8, 7, 5] }
-            },
-            {
-                id: 2,
-                title: "ステップ3：カルビ・特選ロース",
-                reasonTitle: "なぜ中盤に脂の乗った肉？",
-                reason: "焼肉のクライマックス。味覚が慣れてきたこのタイミングで、脂の甘みと濃厚な旨味が最も美味しく感じられます。満足感が一気に高まります。",
-                tipTitle: "味わいのヒント",
-                tip: "脂が多いため焼きすぎは禁物。さっと炙るように焼き、とろけるような食感を楽しみましょう。網の交換を頼む良いタイミングです。",
-                chartData: { labels: ['さっぱり度', '脂の量', '肉の旨味', '食感の良さ', '濃厚さ'], values: [2, 9, 9, 6, 9] }
-            },
-            {
-                id: 3,
-                title: "ステップ4：ホルモン・箸休め",
-                reasonTitle: "なぜここでホルモン？",
-                reason: "濃厚なカルビの後、ホルモンの独特な食感と風味が味覚をリフレッシュさせます。野菜やキムチも挟むことで、口の中がさっぱりし、食事がリセットされます。",
-                tipTitle: "味わいのヒント",
-                tip: "ミノやレバーなど、種類によって異なる食感と味の探求を。サンチュで肉を巻いたり、キムチで口直しをするのがおすすめです。",
-                chartData: { labels: ['さっぱり度', '脂の量', '肉の旨味', '食感の良さ', '濃厚さ'], values: [5, 6, 7, 9, 7] }
-            },
-            {
-                id: 4,
-                title: "ステップ5：締めの一品",
-                reasonTitle: "なぜ最後に締め？",
-                reason: "食事の満足感を完璧にするためのフィナーレです。温かいスープやさっぱりした麺類が、それまでの脂を落ち着かせ、心地よい満腹感をもたらします。",
-                tipTitle: "味わいのヒント",
-                tip: "さっぱりしたいなら冷麺、満足感をプラスするならクッパやビビンバが最適。温かいスープで胃をいたわるのも良いでしょう。",
-                chartData: { labels: ['さっぱり度', '脂の量', '肉の旨味', '食感の良さ', '濃厚さ'], values: [8, 2, 4, 5, 3] }
+        // --- UTILITIES ---
+        function wrapLabel(label) {
+            if (label.length <= 16) return label;
+            const words = label.split(' ');
+            const lines = [];
+            let currentLine = words[0];
+
+            for (let i = 1; i < words.length; i++) {
+                if (currentLine.length + 1 + words[i].length <= 16) {
+                    currentLine += ' ' + words[i];
+                } else {
+                    lines.push(currentLine);
+                    currentLine = words[i];
+                }
             }
-        ];
-
-        let activeStep = 0;
-        let flavorChart;
-
-        const timelineNav = document.getElementById('timeline-nav');
-        const detailsTitle = document.getElementById('details-title');
-        const detailsReasonTitle = document.getElementById('details-reason-title');
-        const detailsReason = document.getElementById('details-reason');
-        const detailsTipTitle = document.getElementById('details-tip-title');
-        const detailsTip = document.getElementById('details-tip');
-
-        function createTimeline() {
-            yakinikuData.forEach(step => {
-                const item = document.createElement('div');
-                item.className = 'timeline-item relative pl-10 pb-10 cursor-pointer';
-                item.dataset.id = step.id;
-                
-                const dot = document.createElement('div');
-                dot.className = 'timeline-dot absolute left-5 w-5 h-5 bg-stone-300 rounded-full top-1';
-                dot.style.transform = 'translateX(-50%)';
-
-                const text = document.createElement('p');
-                text.className = 'timeline-text text-lg text-stone-700 transition-colors duration-300';
-                text.textContent = step.title;
-
-                item.appendChild(dot);
-                item.appendChild(text);
-                timelineNav.appendChild(item);
-
-                item.addEventListener('click', () => {
-                    updateView(step.id);
-                });
-            });
-        }
-        
-        function updateView(id) {
-            activeStep = id;
-            const data = yakinikuData[id];
-
-            document.querySelectorAll('.timeline-item').forEach(item => {
-                item.classList.toggle('active', parseInt(item.dataset.id) === id);
-            });
-
-            detailsTitle.textContent = data.title;
-            detailsReasonTitle.textContent = data.reasonTitle;
-            detailsReason.textContent = data.reason;
-            detailsTipTitle.textContent = data.tipTitle;
-            detailsTip.textContent = data.tip;
-
-            updateChart(data.chartData);
+            lines.push(currentLine);
+            return lines;
         }
 
-        function createChart() {
-            const ctx = document.getElementById('flavorChart').getContext('2d');
-            flavorChart = new Chart(ctx, {
-                type: 'radar',
-                data: {
-                    labels: [],
-                    datasets: [{
-                        label: 'フレーバープロファイル',
-                        data: [],
-                        fill: true,
-                        backgroundColor: 'rgba(220, 38, 38, 0.2)',
-                        borderColor: 'rgb(220, 38, 38)',
-                        pointBackgroundColor: 'rgb(220, 38, 38)',
-                        pointBorderColor: '#fff',
-                        pointHoverBackgroundColor: '#fff',
-                        pointHoverBorderColor: 'rgb(220, 38, 38)'
-                    }]
-                },
-                options: {
-                    maintainAspectRatio: false,
-                    scales: {
-                        r: {
-                            angleLines: {
-                                color: '#d6d3d1'
-                            },
-                            grid: {
-                                color: '#e7e5e4'
-                            },
-                            pointLabels: {
-                                font: {
-                                    size: 14,
-                                    family: "'Noto Sans JP', sans-serif"
-                                },
-                                color: '#44403c'
-                            },
-                            ticks: {
-                                beginAtZero: true,
-                                max: 10,
-                                stepSize: 2,
-                                backdropColor: 'rgba(255, 255, 255, 0.75)',
-                                color: '#78716c'
-                            }
-                        }
-                    },
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
+        const commonTooltipConfig = {
+            callbacks: {
+                title: function(tooltipItems) {
+                    const item = tooltipItems[0];
+                    let label = item.chart.data.labels[item.dataIndex];
+                    if (Array.isArray(label)) {
+                        return label.join(' ');
+                    } else {
+                        return label;
                     }
                 }
-            });
-        }
+            }
+        };
+
+        // --- CHART 1: TARGET SEGMENTS ---
+        const ctxTarget = document.getElementById('targetChart').getContext('2d');
+        const rawTargetLabels = ['Outdoor & BBQ (High)', 'Small B2B (High)', 'Home Party (Med)', 'Food Enthusiasts (Med)'];
+        new Chart(ctxTarget, {
+            type: 'bar',
+            data: {
+                labels: rawTargetLabels.map(wrapLabel),
+                datasets: [{
+                    label: 'Strategic Priority Score',
+                    data: [9, 8, 6, 5],
+                    backgroundColor: ['#D32F2F', '#FBC02D', '#BDBDBD', '#BDBDBD'],
+                    borderRadius: 6,
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false }, tooltip: commonTooltipConfig, title: { display: true, text: 'Target Segment Potential (Feasibility x Impact)' } },
+                scales: { x: { max: 10, grid: { display: false } }, y: { grid: { display: false } } }
+            }
+        });
+
+        // --- CHART 2: STRATEGIC SHIFT ---
+        const ctxRadar = document.getElementById('strategyRadar').getContext('2d');
+        new Chart(ctxRadar, {
+            type: 'radar',
+            data: {
+                labels: ['Unit Price', 'Brand Story/Novelty', 'Inventory Safety', 'Ops Efficiency', 'B2B Scalability'],
+                datasets: [{
+                    label: 'New: Primal Cuts',
+                    data: [9, 9, 4, 8, 8],
+                    fill: true,
+                    backgroundColor: 'rgba(211, 47, 47, 0.2)',
+                    borderColor: '#D32F2F',
+                    pointBackgroundColor: '#D32F2F',
+                    pointBorderColor: '#fff'
+                }, {
+                    label: 'Current: Sliced Meat',
+                    data: [6, 5, 8, 5, 4],
+                    fill: true,
+                    backgroundColor: 'rgba(25, 118, 210, 0.2)',
+                    borderColor: '#1976D2',
+                    pointBackgroundColor: '#1976D2',
+                    pointBorderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { tooltip: commonTooltipConfig },
+                scales: { r: { angleLines: { display: true }, suggestedMin: 0, suggestedMax: 10 } }
+            }
+        });
+
+        // --- CHART 3: SALES MIX ---
+        const ctxDist = document.getElementById('distributionChart').getContext('2d');
+        const rawDistLabels = ['Outdoor/BBQ', 'Small Restaurants (B2B)', 'Home Party', 'Foodies'];
+        new Chart(ctxDist, {
+            type: 'doughnut',
+            data: {
+                labels: rawDistLabels.map(wrapLabel),
+                datasets: [{
+                    data: [45, 30, 15, 10],
+                    backgroundColor: ['#D32F2F', '#FBC02D', '#1976D2', '#90CAF9'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom', labels: { boxWidth: 12 } }, tooltip: commonTooltipConfig }
+            }
+        });
+
+        // --- GEMINI API INTEGRATION ---
         
-        function updateChart(chartData) {
-            flavorChart.data.labels = chartData.labels;
-            flavorChart.data.datasets[0].data = chartData.values;
-            flavorChart.update();
+        // IMPORTANT: The API key is set to empty string for security.
+        // The execution environment will inject the key automatically or allow it to work in the preview environment.
+        const apiKey = ""; 
+
+        async function callGemini(prompt) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            const payload = {
+                contents: [{ parts: [{ text: prompt }] }]
+            };
+
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                if (!response.ok) {
+                    // Handle case where API might fail (e.g., rate limits)
+                    return "Error: Could not generate content. Please try again later.";
+                }
+
+                const data = await response.json();
+                return data.candidates[0].content.parts[0].text;
+            } catch (error) {
+                console.error("Gemini API Error:", error);
+                return "Error: Something went wrong with the AI service.";
+            }
         }
 
-        window.onload = () => {
-            createTimeline();
-            createChart();
-            updateView(0);
-        };
+        async function generateCampaign() {
+            const target = document.getElementById('campaignTarget').value;
+            const theme = document.getElementById('campaignTheme').value;
+            const resultDiv = document.getElementById('campaignResult');
+            
+            // UI Loading State
+            resultDiv.classList.remove('hidden');
+            resultDiv.innerHTML = '<div class="flex justify-center"><div class="loader"></div></div>';
+
+            const prompt = `
+                Act as a professional Marketing Director for a high-quality Beef Primal Cut (Block Meat) brand.
+                Target Audience: ${target}
+                Season/Theme: ${theme}
+                
+                Please generate a short marketing campaign plan in Japanese (Markdown format).
+                Include:
+                1. Campaign Title (Catchy)
+                2. Main Catch Copy (Emotional)
+                3. Short description of the visual/creative concept.
+                Keep it concise (under 200 chars total).
+            `;
+
+            const text = await callGemini(prompt);
+            resultDiv.innerHTML = marked.parse(text);
+        }
+
+        async function generateMenu() {
+            const cut = document.getElementById('menuCut').value;
+            const style = document.getElementById('menuStyle').value;
+            const resultDiv = document.getElementById('menuResult');
+
+            // UI Loading State
+            resultDiv.classList.remove('hidden');
+            resultDiv.innerHTML = '<div class="flex justify-center"><div class="loader"></div></div>';
+
+            const prompt = `
+                Act as a professional Chef Consultant.
+                I need to sell a Beef Primal Cut: "${cut}" to a restaurant of type: "${style}".
+                
+                Please suggest ONE menu item concept in Japanese (Markdown format).
+                Include:
+                1. Dish Name (Appetizing)
+                2. A 1-sentence sales pitch on why this is profitable or delicious.
+                Keep it concise.
+            `;
+
+            const text = await callGemini(prompt);
+            resultDiv.innerHTML = marked.parse(text);
+        }
+
     </script>
 </body>
 </html>
